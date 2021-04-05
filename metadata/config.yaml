@@ -1,0 +1,4 @@
+project_path: "/scr1/users/torresdizm/"
+samples_file: "./metadata/samples.tsv"
+
+gtf_anno: "/scr1/users/torresdizm/genomes/GRCh38.p13/gencode.v33.annotation.gtf"
