@@ -1,0 +1,28 @@
+configfile: "./metadata/config.yaml"
+
+import pandas as pd
+import os
+
+units_table = pd.read_table(config["samples_file"])
+samples= list(units_table.source_name.unique())
+
+
+rule all:
+	input:
+		expand("files/bam_files/{sample}_merged.bam",sample=samples),
+		expand("files/bam_files/{sample}_merged.bam.bai",sample=samples)
+
+
+
+rule SRR_download:
+	params:
+		srr=lambda wildcards: units_table.Run[units_table.Run == wildcards.unit],
+		path="files/fastq_files/"
+	output:
+		expand("files/fastq_files/{{unit}}_{replicate}.fastq.gz",replicate=[1,2])
+	resources:
+		cores=1,
+		mem="12G"
+	shell:
+		"fastq-dump --gzip --split-3 -O {params.path} {wildcards.unit}"
+
