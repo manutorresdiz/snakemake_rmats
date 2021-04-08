@@ -4,25 +4,80 @@ import pandas as pd
 import os
 
 units_table = pd.read_table(config["samples_file"])
-samples= list(units_table.source_name.unique())
-
+samples= list(units_table.Patient.unique())
+#units= list(units_table.Unit)
+#print(units)
+bam_path= config["bam_path"]
 
 rule all:
 	input:
-		expand("files/bam_files/{sample}_merged.bam",sample=samples),
-		expand("files/bam_files/{sample}_merged.bam.bai",sample=samples)
+		expand("results/rmats/{patient}/summary.txt",patient=samples)
 
 
-
-rule SRR_download:
+rule link_files:
 	params:
-		srr=lambda wildcards: units_table.Run[units_table.Run == wildcards.unit],
-		path="files/fastq_files/"
+		lambda wildcards:expand("/mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/{{unit}}/star/{{unit}}{ext}",ext=[".bam",".bam.bai"],unit=units_table.Unit)
 	output:
-		expand("files/fastq_files/{{unit}}_{replicate}.fastq.gz",replicate=[1,2])
+		multiext("data/bam_files/{unit}",".bam",".bam.bai")
 	resources:
-		cores=1,
-		mem="12G"
+		cpu=1,
+		mem="1G",
+		time="5:00"
+	message:
+		"soft linking {wildcards.unit} sample"
 	shell:
-		"fastq-dump --gzip --split-3 -O {params.path} {wildcards.unit}"
+		"""
+		ln -s /mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/{wildcards.unit}/star/{wildcards.unit}.bam /home/torresdizm/scratch/TARGET_rmats/data/bam_files/{wildcards.unit}.bam
+		ln -s /mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/{wildcards.unit}/star/{wildcards.unit}.bam.bai /home/torresdizm/scratch/TARGET_rmats/data/bam_files/{wildcards.unit}.bam.bai
+		"""
 
+
+
+
+
+rule files_prep:
+	input:
+		file=config["comparisons_file"]
+	params:
+		path=config["project_path"]
+	output:
+		expand("metadata/{patient}_{type}.txt",type=["Primary","Relapse"],patient=samples)
+	resources:
+		cpu=1,
+		mem="1G",
+		time="1:00:00"
+	message:
+		"creating config_files"
+	shell:
+		"./scripts/script_samples_rule.sh {params.path} {input.file}"
+
+
+
+
+
+rule rmats:
+	input:
+		expand("metadata/{{patient}}_{type}.txt",type=["Primary","Relapse"],patient=samples),
+		lambda wildcards:expand("data/bam_files/{unit}.bam",unit=units_table.Unit[units_table.Patient == wildcards.patient]),
+		gtf=config["gtf_anno"]
+	params:	
+		path=config["project_path"],
+		tmp_path="results/tmp/{patient}/",
+		final_path="results/rmats/{patient}/",
+		P1="metadata/{patient}_Primary.txt",
+		P2="metadata/{patient}_Relapse.txt"
+	resources:
+		cpu=4,
+		mem="4G",
+		time="96:00:00"
+	output:
+		"results/rmats/{patient}/summary.txt",
+		"results/tmp/{patient}/*.txt"
+	message:
+		"Runing rmats on {wildcards.patient} samples"
+	shell:
+		"/home/torresdizm/Downloads/rmats_turbo_v4_1_1/run_rmats"
+		" --paired-stats --b1 {params.path}{params.P1} --b2 {params.path}{params.P2}"
+		" --novelSS --gtf {input.gtf} -t paired --readLength 75"
+		" --nthread {resources.cpu} --od {params.path}{params.tmp_path}"
+		" --tmp {params.path}{params.final_path}"
