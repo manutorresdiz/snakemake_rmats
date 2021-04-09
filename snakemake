@@ -68,16 +68,19 @@ rule rmats:
 		P2="metadata/{patient}_Relapse.txt"
 	resources:
 		cpu=4,
-		mem="4G",
-		time="96:00:00"
+		time="96:00:00",
+		mem=lambda wildcards, attempt: attempt * 4
 	output:
 		"results/rmats/{patient}/summary.txt",
-		"results/tmp/{patient}/*.txt"
-	message:
-		"Runing rmats on {wildcards.patient} samples"
+		"results/tmp/{patient}/README.txt"
+#	message:
+#		"Runing rmats on {wildcards.patient} samples"
 	shell:
-		"/home/torresdizm/Downloads/rmats_turbo_v4_1_1/run_rmats"
-		" --paired-stats --b1 {params.path}{params.P1} --b2 {params.path}{params.P2}"
-		" --novelSS --gtf {input.gtf} -t paired --readLength 75"
-		" --nthread {resources.cpu} --od {params.path}{params.tmp_path}"
-		" --tmp {params.path}{params.final_path}"
+		"""
+		echo "just to create folder" > {output[1]}
+		/home/torresdizm/Downloads/rmats_turbo_v4_1_1/run_rmats \
+		--paired-stats --b1 {params.path}{params.P1} --b2 {params.path}{params.P2} \
+		--novelSS --gtf {input.gtf} -t paired --readLength 75 \
+		--nthread {resources.cpu} --tmp {params.path}{params.tmp_path} \
+		--od {params.path}{params.final_path}
+		"""
