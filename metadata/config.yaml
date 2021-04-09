@@ -1,4 +1,4 @@
-project_path: "/scr1/users/torresdizm/"
+project_path: "/scr1/users/torresdizm/TARGET_rmats/" ##full path to the folder where the project will be executed 
 samples_file: "metadata/samples.tsv"
 comparisons_file: "metadata/Target_Samples.txt"
 bam_path: "/mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/"
