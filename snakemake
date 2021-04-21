@@ -69,15 +69,15 @@ rule rmats:
 	resources:
 		cpu=4,
 		time="96:00:00",
-		mem=lambda wildcards, attempt: attempt * 4
+		mem=lambda wildcards, attempt: attempt * 25
 	output:
-		"results/rmats/{patient}/summary.txt",
-		"results/tmp/{patient}/README.txt"
+		final="results/rmats/{patient}/summary.txt",
+		tmp="results/tmp/{patient}/README.txt"
 #	message:
 #		"Runing rmats on {wildcards.patient} samples"
 	shell:
 		"""
-		echo "just to create folder" > {output[1]}
+		echo "just to create folder" > {output.tmp}
 		/home/torresdizm/Downloads/rmats_turbo_v4_1_1/run_rmats \
 		--paired-stats --b1 {params.path}{params.P1} --b2 {params.path}{params.P2} \
 		--novelSS --gtf {input.gtf} -t paired --readLength 75 \
