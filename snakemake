@@ -16,9 +16,9 @@ rule all:
 
 rule link_files:
 	params:
-		lambda wildcards:expand("/mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/{{unit}}/star/{{unit}}{ext}",ext=[".bam",".bam.bai"],unit=units_table.Unit)
+		lambda wildcards:expand("/scr1/users/torresdizm/Target_rawdata/files/bam_files/{{unit}}_Aligned.sortedByCoord.out{ext}",ext=[".bam",".bam.bai"],unit=units_table.Unit)
 	output:
-		multiext("data/bam_files/{unit}",".bam",".bam.bai")
+		multiext("data/bam_files/{unit}_Aligned.sortedByCoord.out",".bam",".bam.bai")
 	resources:
 		cpu=1,
 		mem="1G",
@@ -27,8 +27,8 @@ rule link_files:
 		"soft linking {wildcards.unit} sample"
 	shell:
 		"""
-		ln -s /mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/{wildcards.unit}/star/{wildcards.unit}.bam /home/torresdizm/scratch/TARGET_rmats/data/bam_files/{wildcards.unit}.bam
-		ln -s /mnt/isilon/thomas-tikhonenko_lab/target/processed_reads/{wildcards.unit}/star/{wildcards.unit}.bam.bai /home/torresdizm/scratch/TARGET_rmats/data/bam_files/{wildcards.unit}.bam.bai
+		ln -s /scr1/users/torresdizm/Target_rawdata/files/bam_files/{wildcards.unit}_Aligned.sortedByCoord.out.bam /scr1/users/torresdizm/TARGET_rmats/data/bam_files/{wildcards.unit}_Aligned.sortedByCoord.out.bam
+		ln -s /scr1/users/torresdizm/Target_rawdata/files/bam_files/{wildcards.unit}_Aligned.sortedByCoord.out.bam.bai /scr1/users/torresdizm/TARGET_rmats/data/bam_files/{wildcards.unit}_Aligned.sortedByCoord.out.bam.bai
 		"""
 
 
