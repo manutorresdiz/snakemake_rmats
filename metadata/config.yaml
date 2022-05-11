@@ -1,5 +1,0 @@
-project_path: "/scr1/users/torresdizm/TARGET_rmats/" ##full path to the folder where the project will be executed 
-samples_file: "metadata/samples.tsv"
-comparisons_file: "metadata/Target_Comparisons.txt"
-bam_path: "/scr1/users/torresdizm/Target_rawdata/files/bam_files/"
-gtf_anno: "/scr1/users/torresdizm/genomes/GRCh38.p13/gencode.v33.annotation.gtf"
