@@ -39,7 +39,7 @@ rule files_prep:
 	params:
 		path=config["project_path"]
 	output:
-		expand("metadata/{sample_name}_{type}.txt",type=["Primary","Relapse"],sample_name=samples)
+		expand("metadata/{sample_name}.txt",sample_name=samples)
 	resources:
 		cpu=1,
 		mem="1G",
@@ -50,35 +50,32 @@ rule files_prep:
 		"scripts/script_samples_rule.sh {params.path} {input.file}"
 
 
-
-
-
-rule rmats:
-	input:
-		expand("metadata/{{sample_name}}_{type}.txt",type=["Primary","Relapse"],sample_name=samples),
-		lambda wildcards:expand("data/bam_files/{unit}.bam",unit=units_table.Unit[units_table.sample_name == wildcards.sample_name]),
-		gtf=config["gtf_anno"]
-	params:
-		path=config["project_path"],
-		tmp_path="results/tmp/{sample_name}/",
-		final_path="results/rmats/{sample_name}/",
-		P1="metadata/{sample_name}_Primary.txt",
-		P2="metadata/{sample_name}_Relapse.txt"
-	resources:
-		cpu=4,
-		time="96:00:00",
-		mem=lambda wildcards, attempt: attempt * 25
-	output:
-		final="results/rmats/{sample_name}/summary.txt",
-		tmp="results/tmp/{sample_name}/README.txt"
-#	message:
-#		"Runing rmats on {wildcards.sample_name} samples"
-	shell:
-		"""
-		echo "just to create folder" > {output.tmp}
-		/home/torresdizm/Downloads/rmats_turbo_v4_1_1/run_rmats \
-		--paired-stats --b1 {params.path}{params.P1} --b2 {params.path}{params.P2} \
-		--novelSS --gtf {input.gtf} -t paired --readLength 75 \
-		--nthread {resources.cpu} --tmp {params.path}{params.tmp_path} \
-		--od {params.path}{params.final_path}
-		"""
+#rule rmats:
+#	input:
+#		expand("metadata/{{sample_name}}_{type}.txt",type=["Primary","Relapse"],sample_name=samples),
+#		lambda wildcards:expand("data/bam_files/{unit}.bam",unit=units_table.Unit[units_table.sample_name == wildcards.sample_name]),
+#		gtf=config["gtf_anno"]
+#	params:
+#		path=config["project_path"],
+#		tmp_path="results/tmp/{sample_name}/",
+#		final_path="results/rmats/{sample_name}/",
+#		P1="metadata/{sample_name}_Primary.txt",
+#		P2="metadata/{sample_name}_Relapse.txt"
+#	resources:
+#		cpu=4,
+#		time="96:00:00",
+#		mem=lambda wildcards, attempt: attempt * 25
+#	output:
+#		final="results/rmats/{sample_name}/summary.txt",
+#		tmp="results/tmp/{sample_name}/README.txt"
+##	message:
+##		"Runing rmats on {wildcards.sample_name} samples"
+#	shell:
+#		"""
+#		echo "just to create folder" > {output.tmp}
+#		/home/torresdizm/Downloads/rmats_turbo_v4_1_1/run_rmats \
+#		--paired-stats --b1 {params.path}{params.P1} --b2 {params.path}{params.P2} \
+#		--novelSS --gtf {input.gtf} -t paired --readLength 75 \
+#		--nthread {resources.cpu} --tmp {params.path}{params.tmp_path} \
+#		--od {params.path}{params.final_path}
+#		"""
