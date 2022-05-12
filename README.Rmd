@@ -1,0 +1,129 @@
+---- UNDER CONSTRUCTION ----
+
+# Introduction
+This pipeline is for rMATs analysis using snakemake workflow.  
+
+This work is forked from [manutorresdiz/snakemake_rmats](https://github.com/manutorresdiz/snakemake_rmats.git)
+
+This fork is meant to be a detailed, step-by-step, protocol for traditionally trained life scientists with beginner level to intermediate level bioinformatics training.  I suggest investing in a copy of "Bioinformatics Data Skills" by Vince Buffalo and reading (or refer to) chapters 1-7.  My README files are written in .Rmd using RStudio (I use this file format and style because its how I was introduced to bioinformatics and I like the collapsible outline structure).  This page will use publicly available data (Geo dataset [GSE131473](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=gse131473)).
+
+## Pipeline Overview
+This pipeline designed to take .bam and .bam.bai files generated from [cdrummeriv/snakemake_rnaseq](https://github.com/cdrummeriv/snakemake_rnaseq.git) (forked from [khayer/rna_seq_standard_pipeline](https://github.com/khayer/rna_seq_standard_pipeline))
+
+[replace with updated version of pipeline for rmats]
+![example dag](misc/dag.svg)
+# Dependencies and Conda Environment
+## Conda Environment
+This pipeline requires conda environments.  The rMAT install will create its environment
+### Local Run
+```{Installing conda environment and other dependencies}
+# install conda with Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install --cask anaconda
+
+# create conda environment
+conda update conda # update conda if already installed
+conda install -n base -c conda-forge mamba #install mamba (alternative package manager to conda)
+conda create --name rmats
+conda activate rmats
+```
+### Cluster Run
+```{Installing conda environment and other dependencies}
+# navigate to home directory, download and install 
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash ~/miniconda.sh -b -p $HOME/miniconda
+
+# create conda environment
+conda update conda # update conda if already installed, this tutorial uses Conda 4.12.0
+conda install -n base -c conda-forge mamba #install mamba (alternative package manager to conda)
+conda create --name rmats
+conda activate rmats
+```
+## rMATS dependencies
+List of tested rMATS turbo v4.1.2 dependencies can be found at [Xinglab/rmats-turbo](https://github.com/Xinglab/rmats-turbo/blob/v4.1.2/README.md). 
+This workflow written with:
+- Python (3.9)
+  - Cython (0.29.28)
+  - numpy (1.22.3)
+- BLAS, LAPACK (lapack 3.10.1)
+- GNU Scientific Library (2.7.1)
+- GCC (11.3.0)
+- gfortran (fortran-language-server/1.12.0)
+- CMake (3.23.1)
+
+Optional:
+- PAIRADISE (optional)
+- Samtools (optional)
+- STAR (optional)
+### Local MacOS Install
+```{installing dependencies}
+brew install python
+brew install cython
+conda install -c conda-forge blas
+brew install lapack
+brew install gsl
+brew install gcc
+brew install fortran-language-server
+brew install cmake 
+```
+### Cluster/ Conda-based Install
+```{installing dependencies}
+module load Python/3.9.5-GCCcore-10.3.0
+conda install -c anaconda cython
+conda install -c conda-forge blas
+conda install -c conda-forge lapack
+conda install -c conda-forge gsl
+conda install -c conda-forge gcc
+conda install -c conda-forge gfortran
+conda install -c anaconda cmake
+```
+If the required dependencies are already installed, then rMATS can be built with:
+```{building rmats}
+# clone github repository
+git clone https://github.com/Xinglab/rmats-turbo.git
+
+# change directory to rmats-turbo, then build rmats (Note: a .bashrc file need s to exist at /Users/username/)
+cd rmats-turbo/
+# build, run with 'python rmats.py {arguments}'
+./build_rmats
+
+# build with conda, run with use './run_rmats {arguments}'
+/.build_rmats --conda
+
+# test rmats build (creates a conda environment and uses run_rmats to run the automated tests in test/)
+./test_rmats
+```
+# BAM File Preparation
+Create txt files that will be used to pass this grouping of inputs to rMATS. The expected format is ',' to separate replicates.
+```{text for group 1 and 2}
+# Group 1 (BT853 or Wnt) Local Bioinfo Drive
+/Volumes/Bioinfo/gse131473/gse131473/results/mapped/BT853_1_Aligned.sortedByCoord.out.bam,/Volumes/Bioinfo/gse131473/gse131473/results/mapped/BT853_2_Aligned.sortedByCoord.out.bam,/Volumes/Bioinfo/gse131473/gse131473/results/mapped/BT853_3_Aligned.sortedByCoord.out.bam
+
+# Group 1 (BT853 or Wnt) Cluster Bioinfo Drive
+/home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/mapped/BT853_1_Aligned.sortedByCoord.out.bam,/home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/mapped/BT853_2_Aligned.sortedByCoord.out.bam,/home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/mapped/BT853_3_Aligned.sortedByCoord.out.bam
+
+# Group 2 (SU_MB002 or Group 3) Local Bioinfo
+/Volumes/Bioinfo/gse131473/gse131473/results/mapped/SU_MB002_1_Aligned.sortedByCoord.out.bam,/Volumes/Bioinfo/gse131473/gse131473/results/mapped/SU_MB002_2_Aligned.sortedByCoord.out.bam,/Volumes/Bioinfo/gse131473/gse131473/results/mapped/SU_MB002_3_Aligned.sortedByCoord.out.bam
+
+# Group 2 (SU_MB002 or Group 3) Cluster Bioinfo
+/home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/mapped/SU_MB002_1_Aligned.sortedByCoord.out.bam,/home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/mapped/SU_MB002_2_Aligned.sortedByCoord.out.bam,/home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/mapped/SU_MB002_3_Aligned.sortedByCoord.out.bam
+```
+If rMATS was built with './build_rmats --conda' then it should be run with: './run_rmats {arguments}'
+
+```{running rmats}
+# rMATs turbo example code (the "\" allows you to continue on the next line for readability)
+./run_rmats \ # run_rmats call
+  --b1 /path/to/b1.txt --b2 /path/to/b2.txt --novelSS \ # path to input txt containing replicates for group 1 BAMs and group 2 BAMs, '--novelSS' allows for identifdationfo novel splice sites (unannotated)
+  --gtf /path/to/the.gtf -t single \ # path gtf used for alignment, '-t' option is for "paired or single" ended data type
+  --readLength 50 --variable-read-length --nthread 4 \ # length of each read
+  --od /path/to/output --tmp /path/to/tmp_output \ # final and tmp output file paths
+
+# Cluster from Bioinfo
+~/tools/rmats-turbo/run_rmats \ 
+  --b1 /home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/rmats/BT853.txt --b2 /home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/rmats/SU_MB002.txt --novelSS \
+  --gtf /home/drummerc/tsclient/Bioinfo/index/GRCh38.p13_kat/gencode.v32.primary_assembly.annotation.gtf -t paired \
+  --readLength 50 --variable-read-length --nthread 4 \
+  --od /home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/rmats/SU_MB002_v_BT853 \
+  --tmp /home/drummerc/tsclient/Bioinfo/tmp
+
+~/tools/rmats-turbo/run_rmats --b1 /home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/rmats/BT853.txt --b2 /home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/rmats/SU_MB002.txt --novelSS --gtf /home/drummerc/tsclient/Bioinfo/index/GRCh38.p13_kat/gencode.v32.primary_assembly.annotation.gtf -t paired --readLength 50 --variable-read-length --nthread 4 --od /home/drummerc/tsclient/Bioinfo/gse131473/gse131473/results/rmats/SU_MB002_v_BT853 --tmp /home/drummerc/tsclient/Bioinfo/tmp

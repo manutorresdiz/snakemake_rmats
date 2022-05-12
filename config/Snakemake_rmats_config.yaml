@@ -1,7 +1,7 @@
 # Manu's sections are double commented out but kept in file for reference
 project_path: "/scr1/users/drummerc/temp_data/temp_rmats" ## project_path: "/scr1/users/torresdizm/TARGET_rmats/" #full path to the folder where the project will be executed
 
-samples: "SraRunTable.csv" ## samples_file: "metadata/samples.tsv"
+samples: "config/SraRunTable.csv" ## samples_file: "metadata/samples.tsv"
 ## samples.tsv from Manu conversion:
 ### Unit --> "Sample_Name"
 ### Condition --> "group"

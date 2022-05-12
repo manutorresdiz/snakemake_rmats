@@ -1,5 +1,7 @@
 # Manu's code is double commented out
-configfile: "config/Snakemake_rmats_config.yaml" ## "./metadata/config.yaml"
+# run with 'snakemake --profile slurm -s ~/tools/snakemake_rmats/Snakefile -p --use-conda --configfile config/rmats/Snakemake_rmats_config.yaml -n'
+
+configfile: "config/rmats/Snakemake_rmats_config.yaml" ## "./metadata/config.yaml"
 
 import pandas as pd
 import os
